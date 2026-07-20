@@ -1,110 +1,398 @@
-# E-Commerce Sales & Customer Analytics — Excel & SQL Analysis
+# E-Commerce Sales & Customer Analytics
 
-**Status:** 🟡 In Progress — Phase 3 (Excel) and Phase 4 (SQL) complete. Python and Power BI phases pending.
+**Status:** 🟡 In Progress — Excel (Phase 3), SQL (Phase 4), and Python (Phase 5) completed. Power BI Dashboard and Business Report are currently in progress.
 
-This document covers the **Excel** and **SQL** analysis stages of the end-to-end E-Commerce Sales & Customer Analytics project (D2C beauty & personal care brand, 5 countries, 4 categories, 1 year of data). Every KPI below is cross-validated between the two tools — the SQL numbers match the Excel numbers, which is the point of doing both.
+This project demonstrates an end-to-end Data Analyst workflow using a simulated D2C Beauty & Personal Care e-commerce business operating across **5 countries**, **4 product categories**, and **one year (2024)** of sales data.
+
+The project follows a real-world analytics workflow:
+
+**Excel → SQL → Python → Power BI → Business Report**
+
+Each phase validates the previous one to ensure business metrics remain consistent across all tools.
 
 ---
 
-## 📁 Folder Structure
+# 📁 Project Structure
 
 ```
 ecommerce-sales-analytics-project/
+│
 ├── data/
-│   └── raw/  (customers.csv, products.csv, orders.csv, order_items.csv, sales_cleaned.csv)
+│   └── raw/
+│       ├── customers.csv
+│       ├── products.csv
+│       ├── orders.csv
+│       ├── order_items.csv
+│       └── sales_cleaned.csv
+│
 ├── Excel/
 │   └── Ecommerce_Analysis.xlsx
-├── sql/
-│   ├── 01_basic_queries.sql
-│   ├── 02_aggregations.sql
-│   ├── 03_joins.sql
-│   ├── 04_case_subqueries_kpis.sql
-│   ├── 05_ctes.sql
-│   ├── 06_window_functions.sql
-│   └── query_notes.md
-└── README.md   ← this file
+│
+├── SQL/
+│   ├── ECommerce  Analyses  using SQL
+│
+├── Python/
+│   ├── ecommerce_analysis.py
+│   
+│
+├── PowerBI/
+│   └── (In Progress)
+│
+└── README.md
 ```
 
 ---
 
-## Part 1 — Excel Analysis
+# 📊 Project Overview
 
-**Approach:** Built on a native Excel Data Model — PivotTables, PivotCharts, and Slicers connected via Manage Relationships — with all KPIs as live formulas (`SUM`, `COUNTIF`, `GETPIVOTDATA`), not hardcoded snapshots.
+Business Problem:
 
-**Data Model relationships used:**
+The management team wanted a single source of truth to understand business performance across different countries, product categories, and customers.
+
+The project focuses on:
+
+- Sales Performance
+- Customer Behaviour
+- Product Performance
+- Country Performance
+- Order Status Analysis
+- Revenue Trends
+- Customer Segmentation
+
+---
+
+# Phase 3 — Excel Analysis
+
+## Objective
+
+Build an interactive business dashboard using Excel and validate key business KPIs.
+
+---
+
+## Excel Features
+
+- Data Model
+- Relationships
+- Pivot Tables
+- Pivot Charts
+- KPI Dashboard
+- Slicers
+- Interactive Reports
+
+---
+
+## Data Model
+
 ```
-order_items(order_id)      → orders(order_id)
-order_items(product_id)    → products(product_id)
-orders(customer_id)        → customers(customer_id)
-sales_cleaned(customer_id) → customers(customer_id)
-sales_cleaned(product_id)  → products(product_id)
+Customers
+      ▲
+      │
+Orders
+      ▲
+      │
+Order_Items
+      │
+      ▼
+Products
 ```
 
-**Deliverables** ([`Excel/Ecommerce_Analysis.xlsx`](Excel/Ecommerce_Analysis.xlsx)):
-- **KPI Summary** — Total Revenue (₹311,111), AOV (₹447.64), Cancellation Rate (10.3%), Return Rate (9.2%), Repeat Purchase Rate (82%), Never-Ordered Customers (15)
-- **Category Wise Revenue** — Revenue by Category × Month
-- **Order Count by Country** — Order status split by country, with Slicers
-- **Top 10 Customers** — Highest-revenue customers
-- **Lost Calculation** — Cancellation/Return rate by country
+---
 
-**Key Findings:**
-1. ~19.5% of orders are lost to cancellation + return.
-2. France has the highest cancellation rate (11.86%); Germany has the highest return rate (11.31%).
-3. Spain shows the strongest order completion performance.
-4. Italy is above 10% on both cancellation and return — flagged for investigation.
-5. 82% of customers are repeat buyers; 15 customers (5%) have never ordered.
+## KPI Dashboard
+
+| KPI | Value |
+|------|------:|
+| Total Revenue | ₹311,111 |
+| Average Order Value | ₹447.64 |
+| Cancellation Rate | 10.3% |
+| Return Rate | 9.2% |
+| Repeat Purchase Rate | 82% |
+| Customers Never Ordered | 15 |
 
 ---
 
-## Part 2 — SQL Analysis
+## Excel Insights
 
-**Approach:** All 4 raw tables (`customers`, `products`, `orders`, `order_items`) imported into a relational schema with foreign keys defined exactly as in the Excel Data Model above. `sales_cleaned` was independently rebuilt via SQL joins to confirm it equals `order_items ⋈ orders ⋈ products` filtered to `status = 'Completed'` — this cross-check validates every number that follows.
-
-**Concepts covered:** SELECT / WHERE / ORDER BY, GROUP BY / HAVING, INNER & LEFT JOIN, CASE WHEN, subqueries, CTEs, window functions (RANK, SUM OVER, running totals).
-
-**Query files (30 queries total, easy → advanced):**
-| File | Covers |
-|---|---|
-| `01_basic_queries.sql` | Filtering, sorting, distinct values, row counts |
-| `02_aggregations.sql` | GROUP BY, HAVING, order/customer/product-level counts |
-| `03_joins.sql` | INNER JOIN across all 4 tables, LEFT JOIN for orphan orders |
-| `04_case_subqueries_kpis.sql` | CASE WHEN labeling, Cancellation Rate, AOV, above-average spenders |
-| `05_ctes.sql` | WITH-clause queries: repeat customers, MoM growth, high-spend customers |
-| `06_window_functions.sql` | RANK, running revenue total, top-1-per-country pattern |
-
-**Key Findings (validated against Excel, plus new insights only SQL/aggregation surfaces):**
-1. **Total Revenue, AOV, Cancellation Rate, Return Rate all reconciled exactly** with the Excel KPI Summary — confirming `sales_cleaned` was correctly rebuilt.
-2. **Revenue by category:** Hair (₹101,637) > Makeup (₹81,085) > Body (₹76,011) > Skin (₹52,378) — Hair is the leading category.
-3. **Revenue by country:** Italy (₹70,719) and Spain (₹69,897) lead; Germany (₹49,355) is the lowest — despite Germany having the highest *return rate* in the Excel analysis, indicating a quality/fit issue rather than a demand issue.
-4. **Cancellation rate by category:** Makeup (9.85%) and Hair (9.73%) are highest; Body (8.54%) is lowest — cancellation is not concentrated in one category, it's fairly evenly spread.
-5. **Monthly revenue swings meaningfully month-to-month** — biggest jump is October (+32.3% MoM), biggest drop is February (‑24.7% MoM), suggesting a seasonal or promotional pattern worth investigating in Phase 5 (Python).
-6. **139 orphan orders confirmed via LEFT JOIN** — same finding as the Excel/data-quality notes, now validated at the query level.
-
-**Data-quality decision (documented once, applies to both Excel and SQL):**
-> 139 of 1,000 orders (13.9%) have no matching `order_items` rows. Status distribution among these orders closely matches the overall dataset, indicating a data-completeness gap rather than a status-driven pattern. These orders are **excluded from revenue/product analysis** but **included in order-count and status-based KPIs**.
+- Hair category generated the highest revenue.
+- Italy generated the highest overall revenue.
+- France recorded the highest cancellation rate.
+- Germany recorded the highest return rate.
+- Around 19.5% of orders were lost because of cancellations and returns.
+- Most customers were repeat buyers.
 
 ---
 
-## 📋 Known Data Limitations
+# Phase 4 — SQL Analysis
 
-- No cost/COGS data — analysis is revenue-based only; margin is out of scope.
-- Single calendar year (2024) — monthly trend only, no YoY comparison.
-- 139 orphan orders — documented above, consistently excluded from revenue calculations in both tools.
+## Objective
 
----
-
-## 🔜 Next Steps
-
-- [ ] Phase 5: Python EDA — RFM customer segmentation, outlier detection, correlation analysis
-- [ ] Phase 6: Power BI dashboard — 7-page interactive report, star-schema data model
-- [ ] Phase 7: Final written business report with prioritized recommendations
+Validate Excel KPIs using SQL and perform advanced business analysis.
 
 ---
 
-## 🧑‍💻 About This Project
+## SQL Concepts Covered
 
-Fresher Data Analyst portfolio project demonstrating the real-world workflow: Excel → SQL → Python → Power BI → Business Reporting, with every KPI cross-validated between tools before moving to the next phase.
+- SELECT
+- WHERE
+- ORDER BY
+- DISTINCT
+- Aggregate Functions
+- GROUP BY
+- HAVING
+- INNER JOIN
+- LEFT JOIN
+- CASE WHEN
+- Subqueries
+- CTEs
+- Window Functions
 
+---
+
+## SQL Analysis
+
+- Revenue Analysis
+- Customer Analysis
+- Product Analysis
+- Category Analysis
+- Country Analysis
+- Monthly Revenue
+- Customer Spending
+- Repeat Customers
+- Revenue Ranking
+- Running Total
+- Month-over-Month Growth
+- Cancellation Analysis
+- Return Analysis
+
+---
+
+## SQL Insights
+
+- Revenue calculated in SQL exactly matched Excel.
+- Hair generated the highest revenue among all categories.
+- Italy and Spain contributed the highest sales.
+- Germany generated the lowest revenue.
+- 139 orphan orders were identified and excluded from revenue analysis.
+- Monthly revenue showed noticeable seasonal fluctuations.
+
+---
+
+# Phase 5 — Python Analysis
+
+## Objective
+
+Perform Exploratory Data Analysis (EDA), validate the SQL dataset, analyze customer behaviour, and generate business insights before building the Power BI dashboard.
+
+---
+
+## Python Libraries
+
+- Pandas
+- NumPy
+- Matplotlib
+- Seaborn
+- SQLAlchemy
+
+---
+
+## Python Workflow
+
+### Step 1
+
+Connected Python directly with the MySQL database.
+
+### Step 2
+
+Imported the four relational tables.
+
+- Customers
+- Products
+- Orders
+- Order Items
+
+### Step 3
+
+Performed data quality checks.
+
+- Missing Values
+- Duplicate Records
+- Data Types
+- Unique Values
+- Summary Statistics
+
+### Step 4
+
+Merged all tables into a single analytical dataset.
+
+Created the Revenue column.
+
+Filtered completed orders for revenue analysis.
+
+### Step 5
+
+Validated table relationships.
+
+Checked missing customers, products, and orders.
+
+### Step 6
+
+Performed Exploratory Data Analysis.
+
+- Revenue Distribution
+- Country Performance
+- Category Performance
+- Monthly Revenue
+- Cancellation Analysis
+- Return Analysis
+- Correlation Analysis
+
+### Step 7
+
+Performed Outlier Detection using the IQR method.
+
+### Step 8
+
+Calculated Correlation Matrix.
+
+### Step 9
+
+Performed RFM Customer Segmentation.
+
+---
+
+# Python Insights
+
+## Dataset Quality
+
+- 300 Customers
+- 50 Products
+- 1,000 Orders
+- 2,000 Order Items
+
+The dataset contains:
+
+- No Missing Values
+- No Duplicate Records
+- Valid Table Relationships
+
+A total of **139 orphan orders** were identified and excluded from revenue calculations.
+
+---
+
+## Revenue Analysis
+
+- Revenue from completed orders: **₹311,111**
+- Italy generated the highest revenue.
+- Spain ranked second in revenue.
+- Germany generated the lowest revenue.
+- Revenue remained balanced across all product categories.
+
+---
+
+## Customer Behaviour
+
+Customer Segments:
+
+| Segment | Customers |
+|----------|----------:|
+| Loyal | 122 |
+| One Time | 71 |
+| Champions | 44 |
+| Never Converted | 33 |
+| At Risk | 30 |
+
+Repeat Purchase Rate:
+
+**65.33%**
+
+---
+
+## Cancellation & Returns
+
+- France recorded the highest cancellation percentage.
+- Germany recorded the highest return percentage.
+- Makeup products had the highest cancellation rate.
+
+---
+
+## Outlier Analysis
+
+- Total Outliers: **16**
+- Average Order Value (With Outliers): **₹191.45**
+- Average Order Value (Without Outliers): **₹187.60**
+
+Only a small difference was observed, indicating that extreme orders have minimal impact on overall business performance.
+
+---
+
+## Correlation Analysis
+
+| Variables | Correlation |
+|------------|------------:|
+| Quantity vs Revenue | 0.64 |
+| Price vs Revenue | 0.68 |
+
+Revenue is positively influenced by both product quantity and selling price.
+
+---
+
+## Business Recommendations
+
+- Focus marketing campaigns on Italy and Spain.
+- Investigate cancellation reasons in France.
+- Improve product quality or logistics in Germany to reduce returns.
+- Re-engage the 33 inactive customers with promotional campaigns.
+- Increase customer retention efforts to convert one-time buyers into loyal customers.
+
+---
+
+# 📋 Data Limitations
+
+- Revenue-based analysis only.
+- No Cost or Profit information.
+- Single-year dataset (2024).
+- No demographic information.
+- No shipping or payment details.
+- 139 orphan orders were excluded from revenue calculations.
+
+---
+
+# 🚀 Next Phase
+
+## Phase 6 — Power BI Dashboard *(In Progress)*
+
+Planned dashboards:
+
+- Executive Dashboard
+- Revenue Dashboard
+- Customer Dashboard
+- Product Dashboard
+- Country Dashboard
+- RFM Dashboard
+
+---
+
+## Phase 7 — Business Report *(In Progress)*
+
+The final report will include:
+
+- Executive Summary
+- KPI Summary
+- Revenue Insights
+- Customer Insights
+- Product Insights
+- Country Performance
+- Business Recommendations
+
+---
+
+# 🧑‍💻 About This Project
+
+This project demonstrates a complete end-to-end Data Analyst workflow, beginning with raw transactional data and progressing through Excel, SQL, Python, and Power BI before delivering business recommendations.
+
+The objective is to showcase practical data analysis skills commonly used in real-world business environments.
+
+---
 🧑‍💻 **Author:** Saurabh Gopal Chaudhari
 📊 **Role:** Aspiring Data Analyst
 🔗 **LinkedIn:** https://www.linkedin.com/in/saurabh-chaudhari-ds/
